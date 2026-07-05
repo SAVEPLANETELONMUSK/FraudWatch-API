@@ -16,7 +16,7 @@ project: "FraudWatch",
 
 status: "Online",
 
-version: "2.0.0",
+version: "3.0.0",
 
 message: "FraudWatch API is running successfully."
 
@@ -30,9 +30,9 @@ res.json({
 
 success: true,
 
-status: "healthy",
-
 service: "FraudWatch API",
+
+status: "healthy",
 
 time: new Date().toISOString()
 
@@ -44,15 +44,15 @@ function detectInputType(input){
 
 const value = input.trim();
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const emailRegex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+const ipRegex=/^(\d{1,3}\.){3}\d{1,3}$/;
 
-const websiteRegex = /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,}$/i;
+const websiteRegex=/^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,}$/i;
 
-const phoneRegex = /^[+]?[0-9()\-\s]{7,20}$/;
+const phoneRegex=/^[+]?[0-9()\-\s]{7,20}$/;
 
-const usernameRegex = /^@?[A-Za-z0-9_.]{3,}$/;
+const usernameRegex=/^@?[A-Za-z0-9_.]{3,}$/;
 
 if(emailRegex.test(value)) return "email";
 
@@ -62,9 +62,7 @@ if(websiteRegex.test(value)) return "website";
 
 if(phoneRegex.test(value)) return "phone";
 
-if(usernameRegex.test(value) && !value.includes(" "))
-
-return "username";
+if(usernameRegex.test(value) && !value.includes(" ")) return "username";
 
 return "general";
 
@@ -72,7 +70,7 @@ return "general";
 
 app.post("/api/verify",(req,res)=>{
 
-const input = (req.body.input || "").trim();
+const input=(req.body.input||"").trim();
 
 if(input===""){
 
@@ -80,21 +78,21 @@ return res.status(400).json({
 
 success:false,
 
-message:"No input provided."
+message:"Please enter something to verify."
 
 });
 
 }
 
-const type = detectInputType(input);
+const type=detectInputType(input);
 
-let analysis = {
+let analysis={
 
 type,
 
 title:"Verification Analysis",
 
-summary:"FraudWatch analysed your submission and prepared educational guidance.",
+summary:"FraudWatch analysed your submission.",
 
 recommendations:[]
 
@@ -112,11 +110,11 @@ analysis.recommendations=[
 
 "Verify the sender independently before responding.",
 
-"Be cautious of unexpected attachments and links.",
+"Be cautious of unexpected attachments, links, and urgent requests.",
 
-"Never send passwords, banking PINs, recovery phrases, or one-time verification codes (OTPs).",
+"Never share passwords, banking PINs, recovery phrases, or one-time verification codes (OTPs).",
 
-"An email address alone cannot confirm a person's identity or location."
+"An email address alone cannot confirm a person's identity or physical location."
 
 ];
 
@@ -132,11 +130,11 @@ analysis.recommendations=[
 
 "Check that the website address is spelled correctly.",
 
-"Look for HTTPS and verify the organisation independently.",
+"Confirm you are visiting the official website of the organisation.",
 
-"Be cautious of unrealistic offers or pressure to act quickly.",
+"Look for HTTPS, but remember HTTPS alone does not prove legitimacy.",
 
-"Review contact information and company details before making payments."
+"Be cautious of unrealistic investment returns, pressure to act quickly, or unusual payment requests."
 
 ];
 
@@ -150,11 +148,11 @@ analysis.summary="The submitted value appears to be a phone number.";
 
 analysis.recommendations=[
 
-"Be cautious of unexpected calls requesting money or sensitive information.",
+"Unexpected calls requesting money or personal information should be treated with caution.",
 
 "Never share passwords or one-time verification codes (OTPs).",
 
-"If you are unsure, hang up and call the organisation using its official number."
+"If unsure, end the call and contact the organisation using its official published number."
 
 ];
 
@@ -168,11 +166,13 @@ analysis.summary="The submitted value appears to be an IP address.";
 
 analysis.recommendations=[
 
-"An IP address may indicate a network location but does not reliably identify a specific person.",
+"An IP address can sometimes indicate a general network location.",
 
-"VPNs and mobile networks can affect apparent location.",
+"It cannot reliably identify a specific person.",
 
-"Future versions of FraudWatch will support enhanced IP lookups using trusted services."
+"VPNs, mobile networks, and shared internet connections can affect apparent location.",
+
+"Future versions of FraudWatch will provide enhanced IP analysis."
 
 ];
 
@@ -182,15 +182,15 @@ case "username":
 
 analysis.title="Username Analysis";
 
-analysis.summary="The submitted value appears to be a username.";
+analysis.summary="The submitted value appears to be a username or online account.";
 
 analysis.recommendations=[
 
-"Check whether the account is linked from an official website.",
+"Look for impersonation warning signs.",
 
-"Be cautious of impersonation attempts.",
+"Verify the account through the organisation's official website.",
 
-"Do not send money without independently confirming who you are communicating with."
+"Never send money without independently confirming who you are communicating with."
 
 ];
 
@@ -200,15 +200,15 @@ default:
 
 analysis.title="General Verification";
 
-analysis.summary="FraudWatch could not determine the exact type of information submitted.";
+analysis.summary="FraudWatch could not confidently determine the type of information submitted.";
 
 analysis.recommendations=[
 
-"Verify information through trusted, independent sources.",
+"Verify information using trusted and independent sources.",
 
-"Be cautious of urgent requests for money or personal information.",
+"Be cautious of urgent requests involving money or sensitive information.",
 
-"If something feels suspicious, pause before taking action."
+"If something feels suspicious, pause and verify before taking action."
 
 ];
 
@@ -220,7 +220,25 @@ success: true,
 
 input,
 
-analysis
+detectedType: analysis.type,
+
+confidence: "Educational Analysis",
+
+analysis: {
+
+title: analysis.title,
+
+summary: analysis.summary,
+
+recommendations: analysis.recommendations
+
+},
+
+timestamp: new Date().toISOString(),
+
+disclaimer:
+
+"FraudWatch provides educational guidance only. Always verify information independently before making financial, legal, or personal decisions."
 
 });
 
